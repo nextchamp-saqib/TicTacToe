@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-class boardTile extends StatefulWidget{
-  @override
-  createState() => new BoardTileState();
-}
+class boardTile extends StatelessWidget{
 
-class BoardTileState extends State<boardTile>{
+  final String position;
+  VoidCallback onClick;
+
+  boardTile(this.position , this.onClick);
+
   @override
   Widget build(BuildContext context) {
     return new Container(
@@ -20,7 +21,10 @@ class BoardTileState extends State<boardTile>{
         border: new Border.all(width: 2.0, color: const Color(0xFFFFFFFF)),
         borderRadius: new BorderRadius.circular(10.0)
       ),
+      child: new IconButton(
+        icon: new Icon(Icons.arrow_right),
+        onPressed: () => onClick()
+      ),
     );
   }
-
 }

@@ -1,14 +1,28 @@
 import 'package:flutter/material.dart';
 import 'board_tile.dart';
+import 'boardContainer.dart';
 
 class board extends StatefulWidget{
+
+  String init;
+
+  board(this.init);
   @override
-  createState() => new newBoardState();
+  createState() => new newBoardState(init == 'create' ? 'X' : 'O');
 }
 
 class newBoardState extends State<board> {
 
-  
+  String player;
+  newBoardState(this.player);
+
+  Map<String, String> board = new Map();
+  boardConatiner conatiner = new boardConatiner();
+
+  void makeMove(String pos, String player) {
+    conatiner.makeMove(pos, player);
+    board = conatiner.getBoard();
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -42,30 +56,14 @@ class newBoardState extends State<board> {
             new Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                new boardTile(),
-                new boardTile(),
-                new boardTile()
+                new boardTile('0', () => makeMove('0', 'X') ),
+                new boardTile('1', () => makeMove('1', 'X') ),
+                new boardTile('2', () => makeMove('2', 'X') ),
               ]
             ),
-            new Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                new boardTile(),
-                new boardTile(),
-                new boardTile()
-              ]
-            ),
-            new Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                new boardTile(),
-                new boardTile(),
-                new boardTile()
-              ]
-            )
           ],
         )
       )
     );
   }
-} 
+}
