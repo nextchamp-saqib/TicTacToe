@@ -16,8 +16,9 @@ class boardConatiner {
     return this._board;
   }
 
-  void makeMove(String position, String player){
+  Map<String,String> makeMove(String position, String player){
     this._board[position.toString()] = player.toString();
     print('Moved at '+position+' by player '+player);
+    return this._board;
   }
 }

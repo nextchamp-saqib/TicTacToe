@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'createGame.dart';
+import 'board.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -45,20 +46,78 @@ class homePageState extends State<homePage>{
   void _createGame() async{
     FirebaseUser user = await _auth.currentUser();    
     reference.child('createdGames').child('Waiting').child(user.uid).set('true');
-    // reference.child('createdGames').child('InGame').onChildAdded.listen(onData)
-  }
-  void _joinGame() async{
-    FirebaseUser user = await _auth.currentUser();
-    reference.onValue.listen((e) {
+
+    StreamSubscription<Event> newGameListener;
+
+    newGameListener = reference.child('createdGames').onChildChanged.listen((e) {
       DataSnapshot dataSnapshot = e.snapshot;
-      Map data = dataSnapshot.value['createdGames']['Waiting'];
-      if(data.keys.length < 1){
-        print('No game found');
-      }else {
-        //start game
+      Map data = dataSnapshot.value;
+
+      if(data.containsValue(user.uid)){
+        print('Request Accepted.');
+        data.forEach((key, value){
+          if(value == user.uid){
+            print('Found requester');
+            String opponent = key.toString();
+            newGameListener.cancel();
+            reference.child('createdGames').child('liveGames').child(user.uid).set({'opponent' : opponent});
+            _cancelCreate();
+            Navigator.pop(context);
+            Navigator.of(context).push(new MaterialPageRoute(
+              builder: (BuildContext context) => new board('create', user.uid, opponent)
+            ));
+          }
+        });
       }
     });
   }
+  void _cancelCreate() async{
+    FirebaseUser user = await _auth.currentUser();
+    await reference.child('createdGames').child('Waiting').child(user.uid).remove();
+  }
+  void _joinGame() async{
+    FirebaseUser user = await _auth.currentUser();
+
+    StreamSubscription<Event> joinGamelistener;
+
+    joinGamelistener = reference.child('createdGames').child('Waiting').onChildAdded.listen((e) {
+      DataSnapshot dataSnapshot = e.snapshot;
+      String key = dataSnapshot.key;
+      String data = dataSnapshot.value;
+      if(data == null || key == null){
+        //add listener
+        print('No game found');
+      }else {
+        //start game
+        print('Found! Requesting...');
+        reference.child('createdGames').child('Request').child(user.uid).set(key);
+      }
+    });
+
+    StreamSubscription<Event> liveGameListener;
+
+    liveGameListener = reference.child('createdGames').child('liveGames').onChildAdded.listen((e) {
+      DataSnapshot dataSnapshot = e.snapshot;
+      String key = dataSnapshot.key;
+      Map value = dataSnapshot.value;
+      if(value['opponent'] == user.uid){
+        String opponent = key;
+        print('Player Connected.'); 
+        liveGameListener.cancel();
+        _cancelJoin();
+        Navigator.pop(context);
+        Navigator.of(context).push(new MaterialPageRoute(
+          builder: (BuildContext context) => new board('join', user.uid, opponent)
+        ));
+      }
+    });
+  }
+
+  void _cancelJoin() async {
+    FirebaseUser user = await _auth.currentUser();
+    await reference.child('createdGames').child('Request').child(user.uid).remove(); 
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -96,7 +155,10 @@ class homePageState extends State<homePage>{
                         actions: [
                           new FlatButton(
                             child: const Text("Cancel"),
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              _cancelCreate();
+                              Navigator.pop(context);
+                            },
                           ),
                         ],
                       ),
@@ -125,7 +187,10 @@ class homePageState extends State<homePage>{
                         actions: [
                           new FlatButton(
                             child: const Text("Cancel"),
-                            onPressed: () => Navigator.pop(context),
+                            onPressed: () {
+                              _cancelJoin();
+                              Navigator.pop(context);
+                            },
                           ),
                         ],
                       ),
