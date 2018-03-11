@@ -17,7 +17,6 @@ class homePage extends StatefulWidget{
 
 Future<FirebaseUser> _handleSignIn() async {
   if( user == null){
-    print('not signed');
     user = await _auth.signInAnonymously();
     reference.child('onlineUsers').child(user.uid).set('true');
   }else if( user != null ){
@@ -35,8 +34,6 @@ Future<Null> _handleSignOut() async {
 }
 
 class homePageState extends State<homePage>{
-
-
   @override
   void initState() {
     super.initState();
@@ -120,7 +117,6 @@ class homePageState extends State<homePage>{
 
   @override
   Widget build(BuildContext context) {
-
     return new Scaffold(
       appBar: new AppBar(
         leading: new IconButton(
