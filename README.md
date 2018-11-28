@@ -1,8 +1,4 @@
 # tic_tac_toe
 
-A new Flutter project.
+First Flutter project to create a multiplayer tic tac toe game using firebase services.
 
-## Getting Started
-
-For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
